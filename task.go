@@ -82,10 +82,11 @@ func (d *Data) Read(data []byte) (int, error) {
 		}
 	}
 }
-
+//Md5 返回已经上传数据的 md5值
 func (d Data) Md5() string {
 	return fmt.Sprintf("%x", d.md5.Sum(nil))
 }
+//NewData 创建一个新的*Data,如果 limit==0,那么使用默认大小
 func NewData(limit uint64) *Data {
 	if limit == 0 {
 		limit = defaultLimit
@@ -95,7 +96,7 @@ func NewData(limit uint64) *Data {
 		md5: md5.New(),
 	}
 }
-
+//UploadTask表示一个文件的多次上传
 type UploadTask struct {
 	id        string
 	data      *Data
@@ -120,15 +121,14 @@ func (u *UploadTask) Append(data []byte, md5 string) error {
 		return newError(ErrDisMatch, md5+"/"+realMd5)
 	}
 }
-func (u *UploadTask) Finish() (io.ReadCloser, error) {
 
-	log.Println("结束",u.md5,u.data.Md5())
+//Finish 完成一个文件上传，返回io.ReadCloser用于访问文件
+func (u *UploadTask) Finish() (io.ReadCloser,error) {
 	if realMd5 := u.data.Md5(); realMd5 == u.md5 {
 		return u.data, nil
 	} else {
 		return nil, newError(ErrDisMatch, u.md5+"/"+realMd5)
 	}
-
 }
 
 type UploadTasks struct {
